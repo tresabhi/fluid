@@ -1,23 +1,29 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useRef } from "react";
-import { ShaderMaterial, Vector2 } from "three";
+import { Mesh, ShaderMaterial, Vector2 } from "three";
 import fragment from "./shaders/fragment.glsl?raw";
 
 export function Playground() {
   const canvas = useThree((state) => state.gl.domElement);
+  const mesh = useRef<Mesh>(null);
   const material = useRef<ShaderMaterial>(null);
 
   useFrame(({ gl }) => {
-    if (!material.current) return;
+    if (!material.current || !mesh.current) return;
 
     gl.getSize(material.current.uniforms.resolution.value).multiplyScalar(
       gl.getPixelRatio()
     );
+    mesh.current.scale.set(
+      material.current.uniforms.resolution.value.x,
+      material.current.uniforms.resolution.value.y,
+      1
+    );
   });
 
   return (
-    <mesh>
-      <planeGeometry args={[canvas.clientWidth, canvas.clientHeight]} />
+    <mesh ref={mesh} scale={[canvas.clientWidth, canvas.clientHeight, 1]}>
+      <planeGeometry args={[1, 1]} />
       <shaderMaterial
         ref={material}
         fragmentShader={fragment}
